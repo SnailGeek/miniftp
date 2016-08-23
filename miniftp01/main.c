@@ -4,9 +4,13 @@
 #include "str.h"
 #include "tunable.h"
 #include "parseconf.h"
+#include "ftpproto.h"
 
 int main(void)
 {
+	//list_common();
+	//exit(EXIT_SUCCESS);
+	
 	//字符串封装
 	/*
 	char *str1 = "	a b";
@@ -60,12 +64,39 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 
+	/*
+		typedef struct session
+		{
+			//控制连接
+			uid_t uid;
+			int ctrl_fd;
+			char cmdline[MAX_COMMAND_LINE];
+			char cmd[MAX_COMMAND];
+			char arg[MAX_ARG];
+
+			//数据连接
+			struct sockaddr_in *port_addr;
+			int pasv_listen_fd;
+			int data_fd;
+			
+			//父子间的进程通道
+			int parent_fd;
+			int child_fd;
+			
+			//FTP 协议状态
+			int is_ascii;
+		} session_t;
+	*/
 	session_t sess = 
 	{
 		//控制连接
-		-1, "","","",
+		0, -1, "","","",
+		//数据连接
+		NULL, -1, -1,
 		//父子进程通道
-		-1, -1
+		-1, -1,
+		//FTP协议状态
+		0
 	};
 	int listenfd = tcp_server(tunable_listen_address, tunable_listen_port);
 	int conn;

@@ -9,6 +9,13 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <arpa/inet.h>
+#include <shadow.h>
+#include <crypt.h>
+
+#include <time.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <sys/time.h>
 
 #include <stdio.h>
 #include <stdlib.h>

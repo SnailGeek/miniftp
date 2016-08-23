@@ -2,7 +2,7 @@
 #define _SYS_UTIL_H_
 #include "common.h"
 
-int tcp_server(const char* host, unsigned int port);
+int tcp_server(const char* host, unsigned short port);
 
 int getlocalip(char *ip);
 
@@ -21,6 +21,8 @@ ssize_t readline(int sockfd, void *buf, size_t maxline);
 
 void send_fd(int sockfd_fd, int fd);
 int recv_fd(const int sock_fd);
+
+int tcp_client(unsigned short port);
 
 #endif
 

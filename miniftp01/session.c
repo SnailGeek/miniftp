@@ -4,16 +4,6 @@
 
 void begin_session(session_t *sess)
 {
-	struct passwd *pw = getpwnam("nobody");
-	if(pw == NULL)
-		return;
-
-	//这个地方要先改组id才能改用户id因为先改用户id可能没有权限改组id
-	if(setegid(pw->pw_gid) < 0)
-		ERR_EXIT("setegid");
-	if(seteuid(pw->pw_uid) < 0)
-		ERR_EXIT("setegid");
-
 	int sockfds[2];
 	if(	socketpair(PF_UNIX, SOCK_STREAM, 0, sockfds) < 0)
 		ERR_EXIT("socketpair");
@@ -31,6 +21,16 @@ void begin_session(session_t *sess)
 		handle_child(sess);
 	}
 	else{
+			struct passwd *pw = getpwnam("nobody");
+		if(pw == NULL)
+			return;
+
+		//这个地方要先改组id才能改用户id因为先改用户id可能没有权限改组id
+		if(setegid(pw->pw_gid) < 0)
+			ERR_EXIT("setegid");
+		if(seteuid(pw->pw_uid) < 0)
+			ERR_EXIT("setegid");
+
 		// nobody进程
 		close(sockfds[1]);
 		sess->parent_fd = sockfds[0];
