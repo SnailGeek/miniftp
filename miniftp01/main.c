@@ -65,27 +65,29 @@ int main(void)
 	}
 
 	/*
-		typedef struct session
-		{
-			//控制连接
-			uid_t uid;
-			int ctrl_fd;
-			char cmdline[MAX_COMMAND_LINE];
-			char cmd[MAX_COMMAND];
-			char arg[MAX_ARG];
+	typedef struct session
+	{
+		//控制连接
+		uid_t uid;
+		int ctrl_fd;
+		char cmdline[MAX_COMMAND_LINE];
+		char cmd[MAX_COMMAND];
+		char arg[MAX_ARG];
 
-			//数据连接
-			struct sockaddr_in *port_addr;
-			int pasv_listen_fd;
-			int data_fd;
-			
-			//父子间的进程通道
-			int parent_fd;
-			int child_fd;
-			
-			//FTP 协议状态
-			int is_ascii;
-		} session_t;
+		//数据连接
+		struct sockaddr_in *port_addr;
+		int pasv_listen_fd;
+		int data_fd;
+		
+		//父子间的进程通道
+		int parent_fd;
+		int child_fd;
+		
+		//FTP 协议状态
+		int is_ascii;
+		long long restart_pos;
+		char* rnfr_name;
+	} session_t;
 	*/
 	session_t sess = 
 	{
@@ -96,8 +98,11 @@ int main(void)
 		//父子进程通道
 		-1, -1,
 		//FTP协议状态
-		0
+		0, 0, NULL
 	};
+	
+	signal(SIGCHLD, SIG_IGN);
+	
 	int listenfd = tcp_server(tunable_listen_address, tunable_listen_port);
 	int conn;
 	pid_t pid;

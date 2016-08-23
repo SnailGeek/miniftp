@@ -1,14 +1,18 @@
 #include "session.h"
 #include "ftpproto.h"
 #include "privparent.h"
+#include "privsock.h"
 
 void begin_session(session_t *sess)
 {
+	/*
 	int sockfds[2];
 	if(	socketpair(PF_UNIX, SOCK_STREAM, 0, sockfds) < 0)
 		ERR_EXIT("socketpair");
+	*/
 
-
+	priv_sock_init(sess);
+	
 	pid_t pid;
 	pid = fork();
 	if(pid < 0)
@@ -16,24 +20,23 @@ void begin_session(session_t *sess)
 	if(pid == 0){
 
 		// ftp服务器进程
+		/*
 		close(sockfds[0]);
 		sess->child_fd = sockfds[1];
+		*/
+		priv_sock_set_child_context(sess);
 		handle_child(sess);
 	}
 	else{
-			struct passwd *pw = getpwnam("nobody");
-		if(pw == NULL)
-			return;
-
-		//这个地方要先改组id才能改用户id因为先改用户id可能没有权限改组id
-		if(setegid(pw->pw_gid) < 0)
-			ERR_EXIT("setegid");
-		if(seteuid(pw->pw_uid) < 0)
-			ERR_EXIT("setegid");
+			
 
 		// nobody进程
+		
+		/*
 		close(sockfds[1]);
 		sess->parent_fd = sockfds[0];
+		*/
+		priv_sock_set_parent_context(sess);
 		handle_parent(sess);
 	}
 }

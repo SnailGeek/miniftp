@@ -24,5 +24,9 @@ int recv_fd(const int sock_fd);
 
 int tcp_client(unsigned short port);
 
+const char *statbuf_get_perms(struct stat *sbuf);
+
+const char *statbuf_get_date(struct stat* sbuf);
+
 #endif
 

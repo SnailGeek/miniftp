@@ -7,6 +7,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+
+#include <linux/capability.h>
+#include <sys/syscall.h>
 #include <fcntl.h>
 #include <arpa/inet.h>
 #include <shadow.h>
@@ -16,6 +19,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <sys/time.h>
+#include <signal.h>
 
 #include <stdio.h>
 #include <stdlib.h>

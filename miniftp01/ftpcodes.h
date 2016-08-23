@@ -33,7 +33,7 @@
 #define FTP_AUTHOK 234
 
 #define FTP_CWDOK 250
-#define FTP_RMDIROK250
+#define FTP_RMDIROK 250
 #define FTP_DELEOK 250
 #define FTP_RNAMEOK 250
 #define FTP_PWDOK 257
