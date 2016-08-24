@@ -14,15 +14,23 @@ typedef struct session
 	struct sockaddr_in *port_addr;
 	int pasv_listen_fd;
 	int data_fd;
+	int data_process;
+	
+	//限速
+	unsigned int bw_upload_rate_max;
+	unsigned int bw_download_rate_max;
+	long bw_transfer_start_sec;
+	long bw_transfer_start_usec;
 	
 	//父子间的进程通道
 	int parent_fd;
 	int child_fd;
-	
+
 	//FTP 协议状态
 	int is_ascii;
 	long long restart_pos;
 	char* rnfr_name;
+	int abor_received;
 } session_t;
 
 void begin_session(session_t *sess);

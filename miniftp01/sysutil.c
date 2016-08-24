@@ -1,4 +1,5 @@
 #include "sysutil.h"
+
 const char *statbuf_get_perms(struct stat *sbuf){
 	static char perms[] = "----------";
 	perms[0] = '?';
@@ -518,3 +519,107 @@ int recv_fd(const int sock_fd)
 
 }
 
+
+
+static int lock_internal(int fd, int lock_type)
+{
+	int ret;
+	struct flock the_lock;
+	memset(&the_lock, 0, sizeof(the_lock));
+	the_lock.l_type = lock_type;
+	the_lock.l_whence = SEEK_SET;
+	the_lock.l_start = 0;
+	the_lock.l_len = 0;
+	
+	do{
+		ret = fcntl(fd, F_SETLKW, &the_lock);
+	} while(ret < 0 && errno == EINTR);
+	return ret;
+}
+
+int lock_file_read(int fd)
+{
+	return lock_internal(fd, F_RDLCK);
+}
+
+
+int lock_file_write(int fd)
+{
+	return lock_internal(fd, F_WRLCK);
+}
+
+int unlock_file(int fd)
+{
+	int ret;
+	struct flock the_lock;
+	memset(&the_lock, 0, sizeof(the_lock));
+	the_lock.l_type = F_UNLCK;
+	the_lock.l_whence = SEEK_SET;
+	the_lock.l_start = 0;
+	the_lock.l_len = 0;
+	
+
+	ret = fcntl(fd, F_SETLK, &the_lock);
+	
+	return ret;
+}
+
+static struct timeval s_curr_time; //这样做的目的是少一次的系统调用可以使获得时间更准确
+
+long get_time_sec(void)
+{
+	if(gettimeofday(&s_curr_time, NULL) < 0)
+	{
+		ERR_EXIT("gettimeofday");
+	}
+	return s_curr_time.tv_sec;
+}
+long get_time_usec(void)
+{
+	/*
+	struct timeval = curr_time;
+	if(gettimeofday(&curr_time, NULL) < 0)
+	{
+		ERR_EXIT("gettimeofday");
+	}
+	return curr_time.tv_usec;
+	*/
+	return s_curr_time.tv_usec;
+}
+
+
+void nano_sleep(double seconds)
+{
+	time_t secs = (time_t)seconds;                 	//整数部分
+	double fractional = seconds - (double)secs;		//小数部分
+	struct timespec ts;
+	ts.tv_sec = secs;
+	ts.tv_nsec = (long)(fractional * (double)1000000000);
+	
+	int ret;
+	do{
+		ret = nanosleep(&ts, &ts);
+	}while(ret == -1 && errno == EINTR); //这两个条件可能是信号中断
+	
+}
+//开启套接字fd接收带外数据的功能
+void activate_oobinline(int fd)
+{
+	int oob_inline = 1;
+	int ret;
+	ret = setsockopt(fd, SOL_SOCKET, SO_OOBINLINE, &oob_inline, sizeof(oob_inline));
+	if(ret == -1){
+		ERR_EXIT("setsockopt");
+	}
+}
+
+//当文件描述符fd上有带外数据的时候，将产生SIGURG信号
+//该函数设定当前进程能够接收fd文件描述符所产生的SIGURG信号
+void activated_srgurg(int fd)
+{
+	int ret;
+	ret = fcntl(fd, F_SETOWN, getpid());
+	if(ret == -1){
+		ERR_EXIT("fcntl");
+	}
+}

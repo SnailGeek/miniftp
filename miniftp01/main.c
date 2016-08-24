@@ -6,6 +6,8 @@
 #include "parseconf.h"
 #include "ftpproto.h"
 
+extern session_t* p_sess;
+
 int main(void)
 {
 	//list_common();
@@ -49,6 +51,7 @@ int main(void)
 	printf("tunable_idle_session_timeout=%u\n", tunable_idle_session_timeout);
 	printf("tunable_data_connection_timeout=%u\n", tunable_data_connection_timeout);
 	printf("tunable_local_umask=0%o\n", tunable_local_umask);
+	printf("tunable_upload_max_rate=%u\n", tunable_upload_max_rate);
 	printf("tunable_download_max_rate=%u\n", tunable_download_max_rate);
 	
 	if(tunable_listen_address == NULL)
@@ -78,6 +81,13 @@ int main(void)
 		struct sockaddr_in *port_addr;
 		int pasv_listen_fd;
 		int data_fd;
+		int data_process;
+		
+		//限速
+		unsigned int bw_upload_rate_max;
+		unsigned int bw_download_rate_max;
+		long bw_transfer_start_sec;
+		long bw_transfer_start_usec
 		
 		//父子间的进程通道
 		int parent_fd;
@@ -87,6 +97,7 @@ int main(void)
 		int is_ascii;
 		long long restart_pos;
 		char* rnfr_name;
+		int abor_received;
 	} session_t;
 	*/
 	session_t sess = 
@@ -94,12 +105,18 @@ int main(void)
 		//控制连接
 		0, -1, "","","",
 		//数据连接
-		NULL, -1, -1,
+		NULL, -1, -1, 0,
+		//限速
+		0, 0, 0, 0,
 		//父子进程通道
 		-1, -1,
 		//FTP协议状态
-		0, 0, NULL
+		0, 0, NULL, 0
 	};
+	p_sess = &sess;
+	
+	sess.bw_upload_rate_max = tunable_upload_max_rate;
+	sess.bw_download_rate_max = tunable_download_max_rate;
 	
 	signal(SIGCHLD, SIG_IGN);
 	

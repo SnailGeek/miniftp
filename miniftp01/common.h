@@ -15,6 +15,8 @@
 #include <shadow.h>
 #include <crypt.h>
 
+#include <sys/sendfile.h>
+
 #include <time.h>
 #include <sys/stat.h>
 #include <dirent.h>
